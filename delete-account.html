@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Delete My Account — Abroad Jobs</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Mono:wght@700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bb:#054662;--navy:#2c2c5e;--yq:#c94514;
+  --bg:#f4f6f6;--panel:#fff;--muted:#526187;--text:#0d1b2a;
+  --border:#c9d1e6;--r:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.6;min-height:100vh;}
+.header{background:linear-gradient(135deg,#054662 0%,#2c2c5e 100%);color:#fff;padding:36px 24px;text-align:center;}
+.header h1{font-family:'Space Mono',monospace;font-size:24px;letter-spacing:1px;margin-bottom:8px;}
+.header p{font-size:13px;opacity:.85;}
+.wrap{max-width:520px;margin:0 auto;padding:32px 20px 60px;}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:28px 26px;box-shadow:0 2px 16px rgba(5,70,98,.1);}
+p{margin-bottom:14px;color:var(--text);}
+.muted{color:var(--muted);font-size:13.5px;}
+.fg{margin-bottom:16px;}
+label{display:block;font-size:12.5px;font-weight:600;color:var(--bb);margin-bottom:6px;text-transform:uppercase;letter-spacing:.3px;}
+input,textarea{width:100%;padding:11px 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:14px;background:#fff;color:var(--text);}
+input:focus,textarea:focus{outline:none;border-color:var(--bb);}
+textarea{resize:vertical;min-height:70px;}
+.btn{display:block;width:100%;padding:13px;border:none;border-radius:9px;font-size:15px;font-weight:700;cursor:pointer;background:var(--yq);color:#fff;transition:background .15s;}
+.btn:hover{background:#a83a12;}
+.btn:disabled{opacity:.6;cursor:default;}
+.msg{border-radius:9px;padding:12px 14px;font-size:13.5px;margin-bottom:16px;display:none;}
+.msg.err{background:#fdecea;color:#a83a12;border:1px solid #f3c4bb;}
+.msg.ok{background:#eaf7ee;color:#1a7a3a;border:1px solid #bfe6c9;}
+.footer{text-align:center;font-size:12px;color:var(--muted);padding:20px;}
+a{color:var(--yq);font-weight:600;text-decoration:none;}
+a:hover{text-decoration:underline;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🌍 Abroad Jobs</h1>
+  <p>Request Account Deletion</p>
+</div>
+
+<div class="wrap">
+  <div class="card">
+    <p>Use this page to request deletion of your Abroad Jobs account and personal data — no login or app install required. This does the same thing as the 🗑️ option inside the app.</p>
+    <p class="muted">We use your name and phone number only to find and verify your account before deleting it. Requests are reviewed and completed within 7 business days; we may contact you at the phone number below to verify your identity first.</p>
+
+    <div id="msg-err" class="msg err"></div>
+    <div id="msg-ok" class="msg ok"></div>
+
+    <div id="form-wrap">
+      <div class="fg"><label>Full Name (as registered)</label><input type="text" id="d-name" placeholder="Enter your registered full name"/></div>
+      <div class="fg"><label>Registered Phone Number</label><input type="tel" id="d-phone" maxlength="10" placeholder="10-digit mobile number"/></div>
+      <div class="fg"><label>Reason (optional)</label><textarea id="d-reason" placeholder="Optional"></textarea></div>
+      <button class="btn" id="d-submit" onclick="submitDeletion()">Submit Deletion Request</button>
+    </div>
+  </div>
+  <p class="muted" style="text-align:center;margin-top:16px;">See our <a href="privacy.html">Privacy Policy</a> for details on what data we collect and how it's used.</p>
+</div>
+
+<div class="footer">© 2026 Abroad Jobs Portal</div>
+
+<script>
+// Same backend the app itself uses (WEB_APP_URL in app.js) — kept in sync manually since this
+// page is a standalone HTML file with no build step. If the Apps Script deployment URL changes,
+// update it here too.
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzhDy1Wux-W91lqoX6GPqkJMcQR-n3Jv12M7EEunLypPx6SqP8WS-PKvhl5H6qV4Ihstw/exec';
+
+function submitDeletion(){
+  const errEl = document.getElementById('msg-err'), okEl = document.getElementById('msg-ok');
+  errEl.style.display = 'none'; okEl.style.display = 'none';
+  const fullName = document.getElementById('d-name').value.trim();
+  const phone = document.getElementById('d-phone').value.trim();
+  const reason = document.getElementById('d-reason').value.trim();
+  if (!fullName || !phone) { errEl.textContent = 'Please enter your registered name and phone number.'; errEl.style.display = 'block'; return; }
+
+  const btn = document.getElementById('d-submit');
+  btn.disabled = true; btn.textContent = 'Submitting…';
+
+  fetch(WEB_APP_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action: 'requestDeletion', fullName, phone, role: '', reason })
+  }).then(r => r.json()).then(j => {
+    btn.disabled = false; btn.textContent = 'Submit Deletion Request';
+    if (!j.success) { errEl.textContent = j.error || 'Something went wrong. Please try again.'; errEl.style.display = 'block'; return; }
+    document.getElementById('form-wrap').style.display = 'none';
+    okEl.textContent = j.message || 'Your request has been received.';
+    okEl.style.display = 'block';
+  }).catch(() => {
+    btn.disabled = false; btn.textContent = 'Submit Deletion Request';
+    errEl.textContent = 'Could not connect. Please check your internet connection and try again.';
+    errEl.style.display = 'block';
+  });
+}
+</script>
+
+</body>
+</html>
